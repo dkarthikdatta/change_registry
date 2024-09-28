@@ -1,6 +1,8 @@
 import money.euro.Bill
 import money.euro.Coin
+import money.exception.TransactionException
 import money.strategy.ChangeStrategyManager
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
@@ -36,7 +38,6 @@ class CashRegisterTest {
 
     @Test
     fun testTransactionEquals() {
-        println("initial total  = ${cashRegister.remainingChangeInRegister().total}")
         val paidAmount: Change = Change().add(Coin.TWO_EURO, 1).add(Coin.FIFTY_CENT, 1)
         val change = cashRegister.performTransaction(215, paidAmount)
         val expectedChangeToBeReturnedWrtRegister =
@@ -51,5 +52,28 @@ class CashRegisterTest {
         val expectedChangeToBeReturnedWrtRegister =
             Change().add(Coin.FIVE_CENT, 1).add(Coin.TEN_CENT, 3)
         assertNotEquals(expectedChangeToBeReturnedWrtRegister, change)
+    }
+
+    @Test
+    fun testTransactionForExactChange() {
+        val paidAmount: Change =
+            Change().add(Coin.TWO_EURO, 1).add(Coin.TEN_CENT, 1).add(Coin.FIFTY_CENT, 1)
+        val change = cashRegister.performTransaction(215, paidAmount)
+        val expectedChangeToBeReturnedWrtRegister =
+            Change.none()
+        assertNotEquals(expectedChangeToBeReturnedWrtRegister, change)
+    }
+
+    @Test
+    fun testTransactionException() {
+        val paidAmount: Change =
+            Change().add(Coin.TWO_EURO, 1).add(Coin.TEN_CENT, 2) //220
+        val exception = org.junit.jupiter.api.assertThrows<TransactionException> {
+            cashRegister.performTransaction(213, paidAmount)
+        }
+        Assertions.assertEquals(
+            "Unable to provide the requested change. Unable to provide exact change.",
+            exception.message
+        )
     }
 }

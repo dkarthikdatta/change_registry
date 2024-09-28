@@ -29,7 +29,19 @@ class Change {
     }
 
     private fun modify(element: MonetaryElement, count: Int): Change {
-        val newCount = (map[element] ?: 0) + count
+
+        val currentCount = map[element] ?: 0
+
+        if (count > 0 && currentCount > Int.MAX_VALUE - count) {
+            throw IllegalArgumentException("Overflow detected: newCount would exceed Int.MAX_VALUE.")
+        }
+
+        if (count < 0 && currentCount < Int.MIN_VALUE - count) {
+            throw IllegalArgumentException("Underflow detected: newCount would fall below Int.MIN_VALUE.")
+        }
+        
+        val newCount = currentCount + count
+
         if (newCount < 0) {
             throw IllegalArgumentException("Resulting count is less than zero.")
         }
@@ -38,7 +50,7 @@ class Change {
         } else {
             map[element] = newCount
         }
-        total += element.minorValue * count
+        total += element.minorValue.toLong() * count
         return this
     }
 
