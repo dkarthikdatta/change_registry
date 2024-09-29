@@ -22,6 +22,7 @@ The `CashRegister` class holds the logic for performing transactions.
 
 ### Constructor
 
+Construct `CashRegister`  with initial change, Logger and ChangeStrategy. Logger and ChangeStrategy arguments are optional. They are set to default values. Default log level of logger is LogLevel.INFO and default ChangeStrategy is GreedyStrategy.
 ```kotlin
 class CashRegister(
     private val change: Change,
@@ -29,9 +30,11 @@ class CashRegister(
     private val changeStrategy: ChangeStrategy = GreedyStrategy(logger)
 )
 ```
-The `performTransaction` takes the price of the item and the amount paid by the user as arguments and returns a `Change` object or fails with a `TransactionException` if sufficient change is not available.
 
 ### Method
+
+The `performTransaction` method takes the price of the item and the amount paid by the user as arguments and returns a `Change` object or fails with a `TransactionException` if sufficient change is not available.
+
 ```kotlin
 fun performTransaction(price: Long, amountPaid: Change): Change
 ```
@@ -69,10 +72,10 @@ val changeToBeReturned = cashRegister.performTransaction(price = 1000, amountPai
 
 | Algorithm    |Greedy Algorithm|Dynamic Programming Algorithm|
 | ------------- |:-------------:| -----:|
-| Time complexity| O(n) | O(n*m) |
+| Time complexity| O(n) | O(n* m *k) |
 | Space complexit| O(1) | O(m)   |
 
-n =  number of denominations, m =  maximum amount of change to be returned.
+n =  number of denominations, m =  maximum amount of change to be returned, k = maximum count of any single monetary element
 
 #### Int vs Long
 - In [Change](src/main/kotlin/money/Change.kt) class, the map holds MonetaryElement and Int as key value pairs, which represents the MonetaryElement and its count in the change
