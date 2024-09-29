@@ -2,11 +2,12 @@ package money.strategy
 
 import Change
 import MonetaryElement
+import money.logger.Logger
 import money.euro.Bill
 import money.euro.Coin
 import money.exception.TransactionException
 
-class GreedyStrategy : ChangeStrategy {
+class GreedyStrategy(private val logger: Logger,) : ChangeStrategy {
 
     /**
      * Attempts to generate the minimal amount of change using Greedy algorithm.
@@ -19,10 +20,11 @@ class GreedyStrategy : ChangeStrategy {
 
     @Throws(TransactionException::class)
     override fun makeChange(currentChangeInRegistry: Change, amountToBeReturned: Long): Change {
+        logger.logVerbose("making change using greedy algorithm")
         var remainingAmount = amountToBeReturned
         val changeToGive = Change.none()
 
-        // Iterate through bills and coins in descending order of value
+        // Iterate through all the bills and coins in descending order of value
         val availableElements = (Bill.values().toList() as List<MonetaryElement>) + (Coin.values()
             .toList() as List<MonetaryElement>)
             .sortedByDescending { it.minorValue }
@@ -44,9 +46,10 @@ class GreedyStrategy : ChangeStrategy {
         }
 
         if (remainingAmount != 0L) {
+            logger.logError("Unable to provide exact change.")
             throw TransactionException("Unable to provide exact change.")
         }
-
+        logger.logInfo("Successfully made change using greedy algorithm")
         return changeToGive
     }
 }

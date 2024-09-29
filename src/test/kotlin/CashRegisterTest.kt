@@ -1,3 +1,5 @@
+import money.logger.LogLevel
+import money.logger.Logger
 import money.euro.Bill
 import money.euro.Coin
 import money.exception.TransactionException
@@ -31,9 +33,10 @@ class CashRegisterTest {
 //        // total - 2880
 
 
+        val logger: Logger = Logger(LogLevel.INFO)
         val changeStrategy =
-            ChangeStrategyManager.getChangeStrategyMgr().determineChangeStrategy()
-        cashRegister = CashRegister(initialChange, changeStrategy)
+            ChangeStrategyManager.getChangeStrategyMgr(logger).determineChangeStrategy()
+        cashRegister = CashRegister(initialChange, logger, changeStrategy)
     }
 
     @Test
@@ -76,4 +79,21 @@ class CashRegisterTest {
             exception.message
         )
     }
+
+
+    @Test
+    fun testAfterBalance(){
+        val paidAmount: Change = Change().add(Coin.TWO_EURO, 1).add(Coin.FIFTY_CENT, 1)
+        cashRegister.performTransaction(215, paidAmount)
+        val remainingChangeInRegistry = cashRegister.remainingChangeInRegister()
+        val expectedBalanceInRegistry = Change()
+            .add(Coin.FIVE_CENT, 9) // -1 from initial
+            .add(Coin.TEN_CENT, 3)  // -1 from initial
+            .add(Coin.TWENTY_CENT, 1) // -1 from initial
+            .add(Coin.FIFTY_CENT, 4) // +1 from initial
+            .add(Coin.TWO_EURO, 4)  // +1 from initial
+            .add(Bill.TWENTY_EURO, 1)
+        assertEquals(expectedBalanceInRegistry, remainingChangeInRegistry)
+    }
+
 }

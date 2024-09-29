@@ -23,7 +23,11 @@ The `CashRegister` class holds the logic for performing transactions.
 ### Constructor
 
 ```kotlin
-CashRegister(change: Change, changeStrategy: ChangeStrategy = GreedyStrategy())
+class CashRegister(
+    private val change: Change,
+    private val logger: Logger = Logger(),
+    private val changeStrategy: ChangeStrategy = GreedyStrategy(logger)
+)
 ```
 The `performTransaction` takes the price of the item and the amount paid by the user as arguments and returns a `Change` object or fails with a `TransactionException` if sufficient change is not available.
 
@@ -36,16 +40,18 @@ fun performTransaction(price: Long, amountPaid: Change): Change
 ### Example usage
 
 ```kotlin
-val changeStrategy = ChangeStrategyManager.getChangeStrategyMgr().determineChangeStrategy()
+val logger: Logger = Logger(LogLevel.INFO)
+val changeStrategy =
+    ChangeStrategyManager.getChangeStrategyMgr(logger).determineChangeStrategy()
 
 val initialChange = Change()
-            .add(Coin.FIVE_CENT, 10)
-            .add(Coin.TEN_CENT, 4)
-            .add(Coin.TWENTY_CENT, 2) 
-            .add(Coin.FIFTY_CENT, 3) 
-            .add(Coin.TWO_EURO, 3)  
-            .add(Bill.TWENTY_EURO, 1) 
-val cashRegister = CashRegister(change = initialChange, changeStrategy = changeStrategy)
+    .add(Coin.FIVE_CENT, 10)
+    .add(Coin.TEN_CENT, 4)
+    .add(Coin.TWENTY_CENT, 2)
+    .add(Coin.FIFTY_CENT, 3)
+    .add(Coin.TWO_EURO, 3)
+    .add(Bill.TWENTY_EURO, 1)
+val cashRegister = CashRegister(change = initialChange, logger = logger, changeStrategy = changeStrategy)
 val changeToBeReturned = cashRegister.performTransaction(price = 1000, amountPaid = Change().add(Bill.TWENTY_EURO, 1))
 ```
 

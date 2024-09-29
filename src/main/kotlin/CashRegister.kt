@@ -1,3 +1,4 @@
+import money.logger.Logger
 import money.exception.TransactionException
 import money.strategy.ChangeStrategy
 import money.strategy.GreedyStrategy
@@ -10,7 +11,8 @@ import org.jetbrains.annotations.TestOnly
  */
 class CashRegister(
     private val change: Change,
-    private val changeStrategy: ChangeStrategy = GreedyStrategy()
+    private val logger: Logger = Logger(),
+    private val changeStrategy: ChangeStrategy = GreedyStrategy(logger)
 ) {
 
     /**
@@ -25,8 +27,11 @@ class CashRegister(
      */
     fun performTransaction(price: Long, amountPaid: Change): Change {
 
+        logger.logVerbose("Performing transaction of price $price. Amount paid in change = $amountPaid ")
+
         val totalPaid = amountPaid.total
         if (totalPaid < price) {
+            logger.logError("Amount paid $totalPaid is less than the price $price of item")
             throw TransactionException("Insufficient amount paid.")
         }
 
@@ -39,6 +44,7 @@ class CashRegister(
             val amountToBeReturned = totalPaid - price
 
             if (change.total < amountToBeReturned) {
+                logger.logError("No change to return for the amountPaid")
                 throw TransactionException("No change to return for the amountPaid")
             }
 
@@ -48,12 +54,14 @@ class CashRegister(
                 changeToGive.getElements().forEach { element ->
                     change.remove(element, changeToGive.getCount(element))
                 }
+                logger.logInfo("Successfully returning change, $changeToGive")
                 changeToGive
             } catch (e: Exception) {
                 // If making change fails, remove the paid amount from the register's change
                 amountPaid.getElements().forEach { element ->
                     change.remove(element, amountPaid.getCount(element))
                 }
+                logger.logError("Error in returning change, ${e.message}")
                 throw TransactionException(
                     "Unable to provide the requested change. ${e.message}",
                     e
@@ -67,45 +75,3 @@ class CashRegister(
         return change
     }
 }
-
-/**
-private fun makeChange(amountToBeReturned: Long): Change {
-var remainingAmount = amountToBeReturned
-val changeToGive = Change.none()
-println("current change in register =  $change")
-
-// Iterate through bills and coins in descending order of value
-val availableElements = (money.euro.Bill.values().toList() as List<MonetaryElement>) + (money.euro.Coin.values()
-.toList() as List<MonetaryElement>)
-.sortedByDescending { it.minorValue }
-
-
-for (element in availableElements) {
-val countInRegister = change.getCount(element)
-val maxNeeded: Int = (remainingAmount / element.minorValue).toInt()
-
-println("checking element = ${element.minorValue}, max need = $maxNeeded")
-
-println("countInRegister = $countInRegister of element ${element.minorValue}")
-// Take the smaller of what is available in the register or what is needed
-val countToGive = maxNeeded.coerceAtMost(countInRegister)
-println("countToGive = $countToGive of element ${element.minorValue}")
-
-if (countToGive > 0) {
-changeToGive.add(element, countToGive)
-remainingAmount -= countToGive * element.minorValue
-}
-
-println("remaining amount = $remainingAmount")
-
-if (remainingAmount == 0L) break
-}
-
-if (remainingAmount != 0L) {
-throw TransactionException("Unable to provide exact change.")
-}
-
-return changeToGive
-}
-
- **/

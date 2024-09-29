@@ -2,6 +2,8 @@ package money.strategy
 
 import money.euro.Bill
 import Change
+import money.logger.LogLevel
+import money.logger.Logger
 import money.euro.Coin
 import money.exception.TransactionException
 import org.junit.jupiter.api.Assertions.*
@@ -9,9 +11,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class GreedyStrategyTest {
-
+    private val logger: Logger = Logger(LogLevel.DEBUG)
     private lateinit var currentChangeInRegistry: Change
-    private val greedyStrategy = GreedyStrategy()
+    private val greedyStrategy = GreedyStrategy(logger)
 
     @BeforeEach
     fun setUp() {

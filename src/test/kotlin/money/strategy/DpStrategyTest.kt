@@ -1,6 +1,8 @@
 package money.strategy
 
 import Change
+import money.logger.LogLevel
+import money.logger.Logger
 import money.euro.Bill
 import money.euro.Coin
 import money.exception.TransactionException
@@ -9,9 +11,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class DpStrategyTest {
-
+    private val logger: Logger = Logger(LogLevel.INFO)
     private lateinit var currentChangeInRegistry: Change
-    private val dpStrategy = DpStrategy()
+    private val dpStrategy = DpStrategy(logger)
 
     @BeforeEach
     fun setUp() {
@@ -54,5 +56,14 @@ class DpStrategyTest {
             dpStrategy.makeChange(currentChangeInRegistry, 12)
         }
         assertEquals("Unable to provide exact change.", exception.message)
+    }
+
+    @Test
+    fun testSimple() {
+        println("currentChangeInRegistry = ${currentChangeInRegistry.total}")
+        val changeReturned = dpStrategy.makeChange(currentChangeInRegistry, 25)
+        val changeFor26WrtRegistry = Change().add(Coin.TWENTY_CENT, 1).add(Coin.FIVE_CENT, 1)
+        println("changeReturned = $changeReturned")
+        assertEquals(changeFor26WrtRegistry, changeReturned)
     }
 }
