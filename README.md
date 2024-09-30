@@ -79,6 +79,6 @@ n =  number of denominations, m =  maximum amount of change to be returned, k = 
 
 #### Int vs Long
 - In [Change](src/main/kotlin/money/Change.kt) class, the map holds MonetaryElement and Int as key value pairs, which represents the MonetaryElement and its count in the change
-- The maximum count of a single MonetaryElement in a change is 2,147,483,647 (MAX_INT) which is practically within limits.
+- The maximum count of a single MonetaryElement in a change is 2,147,483,647 (MAX_INT) which is practically within limits. (Just the count of a single MonetaryElement is Int. The total of change is still Long)
 - But if there is a use-case where the count of a single MonetaryElement needs to be greater than 2,147,483,647 we can use Long in place of Int in `Change` class.
 - However, if we are using Long, we have to tradeoff the Memory Usage and Performance.
